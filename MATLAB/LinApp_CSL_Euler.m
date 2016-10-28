@@ -1,7 +1,7 @@
 function [X, Y, E] = LinApp_CSL_Euler(funcname,param,X0,Z,NN,...
-                     logX,Eps,Phi,Sylv,Y0)
+                     logX,EE,Eps,Phi,Sylv,Y0)
 
-% Version 1.0, written by Kerk Phillips, April 2014
+% Version 1.1, written by Kerk Phillips, October 2016
 %  
 % Generates a history of X & Y variables by linearizing the policy function
 % about the current state as in Evans & Phillips cited below.
@@ -16,6 +16,8 @@ function [X, Y, E] = LinApp_CSL_Euler(funcname,param,X0,Z,NN,...
 %  logX  - is an indicator that determines if the X & Y variables are
 %          log-linearized (true) or simply linearized (false).  Z variables
 %          are always simply linearized, default is 1.
+%  EE    - is an indicator that determines if the Euler errors are
+%          calculated or not, default is 0 or do not calculate.
 %  Eps   - nz-by-ne matrix of discrete values for the support of epsilon
 %          shocks nect period (used for calculating Euler errors)
 %  Phi   - nz-by-ne matrix of probabilities corresponding to the elements
@@ -45,6 +47,10 @@ function [X, Y, E] = LinApp_CSL_Euler(funcname,param,X0,Z,NN,...
 % Use log-linearized X & Y if no value is specified for logX
 if (~exist('logX', 'var'))
     logX = true;
+end
+% Do not calculate Euler errors unless EE is set to 1
+if (~exist('logX', 'var'))
+    EE = false;
 end
 % set Y0 to empty vector if not passed.
 if (~exist('Y0', 'var'))
@@ -118,51 +124,53 @@ for t=1:nobs-1
         end
     end
     
-    % Calculate Euler Errors
-    % Recall Eps is value of epsilon and phi is the probability
-    % Sum over potential shocks
-    for e=1:ne
-        % get conditional value of Zp
-        Zp = NN*Z(t+1,:) + Eps(e,:);
-        % linearization point
-        theta1 = [X(t+1,:) X(t+1,:) X(t+1,:) Zp Zp]';
-        % get coefficients
-        % take derivatives at the linearization point
-        [AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, WW, TT] = ...
-        LinApp_Deriv(funcname,param,theta1,nx,ny,nz,logX);
-        % solve for coefficient matrices
-        [PP, QQ, UU, RR, SS, VV] = LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,...
-            KK,LL,MM,WW,TT,NN,Zp,Sylv);
-        % generate conditional value of Xp and Yp
-        Xdev = zeros(1,nx);
-        Zdev = zeros(1,nz);
-        % Since LinApp_Sim uses column vectors and inputs, transpose
-        if ny>0
-            [Xtil, Ytil] = LinApp_Sim(Xdev',Zdev',PP,QQ,UU,RR,SS,VV);
-            Ytil = Ytil';
-        else
-            [Xtil, ~] = LinApp_Sim(Xdev',Zdev',PP,QQ,UU);
-        end
-        Xtil = Xtil';
-        % Convert to levels
-        if logX
-            Xp = X(t+1,:).*exp(Xtil); 
-            if ny> 0
-                Yp = Y(t+1,:).*exp(Ytil);
-            else
-                Yp = [];
-            end
-        else
-            Xp = X(t+1,:) + Xtil;
+    if EE==1
+        % Calculate Euler Errors
+        % Recall Eps is value of epsilon and phi is the probability
+        % Sum over potential shocks
+        for e=1:ne
+            % get conditional value of Zp
+            Zp = NN*Z(t+1,:) + Eps(e,:);
+            % linearization point
+            theta1 = [X(t+1,:) X(t+1,:) X(t+1,:) Zp Zp]';
+            % get coefficients
+            % take derivatives at the linearization point
+            [AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, WW, TT] = ...
+            LinApp_Deriv(funcname,param,theta1,nx,ny,nz,logX);
+            % solve for coefficient matrices
+            [PP, QQ, UU, RR, SS, VV] = LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,...
+                KK,LL,MM,WW,TT,NN,Zp,Sylv);
+            % generate conditional value of Xp and Yp
+            Xdev = zeros(1,nx);
+            Zdev = zeros(1,nz);
+            % Since LinApp_Sim uses column vectors and inputs, transpose
             if ny>0
-                Yp = Y(t+1,:) + Ytil;
+                [Xtil, Ytil] = LinApp_Sim(Xdev',Zdev',PP,QQ,UU,RR,SS,VV);
+                Ytil = Ytil';
             else
-                Y = [];
+                [Xtil, ~] = LinApp_Sim(Xdev',Zdev',PP,QQ,UU);
             end
+            Xtil = Xtil';
+            % Convert to levels
+            if logX
+                Xp = X(t+1,:).*exp(Xtil); 
+                if ny> 0
+                    Yp = Y(t+1,:).*exp(Ytil);
+                else
+                    Yp = [];
+                end
+            else
+                Xp = X(t+1,:) + Xtil;
+                if ny>0
+                    Yp = Y(t+1,:) + Ytil;
+                else
+                    Y = [];
+                end
+            end
+            % observed history
+            theta2 = [Xp X(t+1,:) X(t,:) Zp Z(t+1)]';
+            % Weight errors by probability and sum
+            E(t,:) = E(t,:) + funcname(theta2,param)' * Phi(e);
         end
-        % observed history
-        theta2 = [Xp X(t+1,:) X(t,:) Zp Z(t+1)]';
-        % Weight errors by probability and sum
-        E(t,:) = E(t,:) + funcname(theta2,param)' * Phi(e);
-    end
+    end    
 end

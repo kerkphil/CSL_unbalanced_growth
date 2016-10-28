@@ -4,19 +4,19 @@ clear
 % set model parameters
 alf = .35;
 bet = .98;
-sig = .013*5;
-rho = .95;
-gam = 2.5;
+sig = 2.5;
+theta = 1.4;
 del = .025;
 g   = .01;
-chi = 5;
-theta = 1.5;
+psi = 5;
+omega = .0013;
+rho = .95;
 
 % set starting values
-X0 = [1; .5; 1];
+X0 = [10; .5; 1];
 
 % set up parameter vector to pass to DSGE function file
-param = [alf bet sig rho gam del g chi theta];
+param = [alf bet sig theta del g psi omega rho];
 % set numerical parameters
 nx = 3;
 ny = 0;
@@ -51,10 +51,10 @@ end
 
 %  current state linarization
 tic;
-[XCSL, temp, EulerErr] = LinApp_CSL_Euler(@UnBal_dyn,param,X0',Z,...
+[XCSL, temp, EulerErr] = LinApp_CSL_Euler(@GHH_dyn,param,X0',Z,...
     rho,logX,EE,Eps,Phi);
 k  = XCSL(:,1);
-ell  = XCSL(:,2);
+h  = XCSL(:,2);
 Y = zeros(nobs+2,1);
 r  = zeros(nobs+2,1);
 w  = zeros(nobs+2,1);
@@ -63,7 +63,7 @@ i  = zeros(nobs+2,1);
 
 for t=2:nobs+1
     [Y(t+1), r(t+1), w(t+1), c(t+1), i(t+1)] = ...
-     UnBal_defs(k(t), ell(t), t, Z(t), k(t+1), ell(t+1), t+1, param);
+     GHH_defs(k(t), h(t), t, Z(t), k(t+1), h(t+1), t+1, param);
 end
 toc
 
