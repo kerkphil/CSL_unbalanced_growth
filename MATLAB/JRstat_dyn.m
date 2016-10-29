@@ -28,7 +28,7 @@ rho   = param(10);
 [Yp, rp, wp, cp, ip, Gamp, Delp, Phip, Pip, Lamp] = ...
     JRstat_defs(k, h, x, zp, kp, hp, xp, param);
 
-out1 = bet*exp(g)*(Lam*Phip + (1+rp-del)*(Gam*Del)*exp(g))/(Gamp*Delp) - 1;
-out2 = (Gam/Pi + Del*w*Gamp*Phip*exp(2*g))/(Gam*Del*w) - 1;
+out1 = bet*(Lam*Phip + Gamp*exp(g)*Delp*(1+rp-del))/(Gam*Del) - 1;
+out2 = (Gam/Pi + bet*Lam*w*Gamp*exp(g)*Phip)/(Gam*Del*w) - 1;
 out3 = c^gam*(xm*exp(-g))^(1-gam)/x - 1;
 out = [out1; out2; out3];

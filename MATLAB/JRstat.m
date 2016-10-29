@@ -6,11 +6,11 @@ alf = .35;
 bet = .98;
 sig = 2.5;
 theta = 1.4;
-gam = .1;
+gam = .01;
 del = .025;
 g   = .01;
-psi = 1;
-omega = .0013;
+psi = 2;
+omega = .0000013;
 rho = .95;
 
 % set up parameter vector to pass to DSGE function file
