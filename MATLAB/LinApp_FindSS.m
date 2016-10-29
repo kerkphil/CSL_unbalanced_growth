@@ -29,7 +29,10 @@ function XYbar = LinApp_FindSS(funcname,param,guessXY,Zbar,nx,ny)
 %  create anonlymous function
 f = @(XYbar) steady(XYbar, Zbar, funcname, param, nx, ny);
 % set options for solver
-options = optimoptions(@fsolve,'Display','iter');
+options = optimoptions(@fsolve,'Display','iter',...
+           'MaxIterations',100000,...
+           'MaxFunctionEvaluations',1000000,...
+           'FunctionTolerance',1.0e-5);
 %  use fsolve
 XYbar = fsolve(f,guessXY,options);
 

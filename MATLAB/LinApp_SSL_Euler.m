@@ -1,5 +1,5 @@
 function [X, Y, E] = LinApp_SSL_Euler(X0,Z,XYbar,logX,EE,Eps,Phi,...
-                                      PP,QQ,UU,Y0,RR,SS,VV)
+                              PP,QQ,UU,NN,funcname,param,Y0,RR,SS,VV)
 
 % Version 1.1, written by Kerk Phillips, October 2016
 %  
@@ -74,6 +74,7 @@ Ybar = XYbar(:,nx+1:nx+ny);
 % Generate a history of X's and Y's
 Xtil = zeros(nobs,nx);
 Ytil = zeros(nobs,ny);
+E = zeros(nobs,nx+ny);
 
 % set starting values
 X(1,:) = X0;
@@ -91,6 +92,9 @@ else
         Ytil(1,:) = Y(1,:) - Ybar;
     end
 end
+
+% set values for future shocks in Euler equations
+[~,ne] = size(Eps);
 
 % Generate time series
 for t=1:nobs-1

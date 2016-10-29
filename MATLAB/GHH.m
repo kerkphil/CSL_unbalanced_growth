@@ -1,4 +1,4 @@
-% Unbalanced Growth Model
+% Greenwood, Hercowitz and Huffman model
 clear
 
 % set model parameters
