@@ -9,7 +9,7 @@ theta = 1.4;
 del = .025;
 g   = .01;
 psi = 5;
-omega = .0013;
+omega = .013;
 rho = .95;
 
 % set starting values
@@ -33,13 +33,13 @@ Cum = -.5/ne;
 Phi = ones(ne,1)/ne;
 for e = 1:ne
     Cum = Cum + Phi(e);
-    Eps(e) = norminv(Cum,0,sig);
+    Eps(e) = norminv(Cum,0,omega);
 end
 
 % generate a history of Z's
 Z = zeros(nobs+2,nz);
 if randomerr
-    eps = randn(nobs+2,1)*sig;
+    eps = randn(nobs+2,1)*omega;
 else
     load simulationshocks.mat
     eps = simeps;

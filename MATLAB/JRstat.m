@@ -6,11 +6,11 @@ alf = .35;
 bet = .98;
 sig = 2.5;
 theta = 1.4;
-gam = .01;
+gam = 1;
 del = .025;
 g   = .01;
 psi = 2;
-omega = .0000013;
+omega = .013;
 rho = .95;
 
 % set up parameter vector to pass to DSGE function file
@@ -19,7 +19,7 @@ param = [alf bet sig theta gam del g psi omega rho];
 nx = 3;
 ny = 0;
 nz = 1;
-nobs = 1000;
+nobs = 300;
 randomerr = 1;
 logX = 0;
 EE = 1;
@@ -31,13 +31,13 @@ Cum = -.5/ne;
 Phi = ones(ne,1)/ne;
 for e = 1:ne
     Cum = Cum + Phi(e);
-    Eps(e) = norminv(Cum,0,sig);
+    Eps(e) = norminv(Cum,0,omega);
 end
 
 % generate a history of Z's
 Z = zeros(nobs+2,nz);
 if randomerr
-    eps = randn(nobs+2,1)*sig;
+    eps = randn(nobs+2,1)*omega;
 else
     load simulationshocks.mat
     eps = simeps;
@@ -88,11 +88,11 @@ for t=2:nobs+1
      JRstat_defs(kSSL(t), hSSL(t), xSSL(t), Z(t), ...
      kSSL(t+1), hSSL(t+1), xSSL(t+1), param);
 end
-toc
+timeSSL = toc;
 % cacluate Euler error measures
-AvgEESSL = mean(EESSL(2:nobs+1,:))
-MaxAEESSL = max(abs(EESSL(2:nobs+1,:)))
-RMSEESSL = sqrt(mean(EESSL(2:nobs+1,:).^2))
+AvgEESSL = mean(mean(EESSL(2:nobs+1,:)));
+MaxAEESSL = max(max(abs(EESSL(2:nobs+1,:))));
+RMSEESSL = sqrt(mean(mean(EESSL(2:nobs+1,:).^2)));
                                   
 %  current state linarization
 tic;
@@ -110,11 +110,22 @@ cCSL  = zeros(nobs+2,1);
 iCSL  = zeros(nobs+2,1);
 for t=2:nobs+1
     [YCSL(t+1), rCSL(t+1), wCSL(t+1), cCSL(t+1), iCSL(t+1)] = ...
-     JRstat_defs(kCSL(t), hCSL(t), xCSL(t), t, Z(t), ...
-     kCSL(t+1), hCSL(t+1), xCSL(t+1), t+1, param);
+     JRstat_defs(kCSL(t), hCSL(t), xCSL(t), Z(t), ...
+     kCSL(t+1), hCSL(t+1), xCSL(t+1), param);
 end
-toc
+timeCSL = toc;
 % cacluate Euler error measures
-AvgEECSL = mean(EECSL(2:nobs+1,:))
-MaxAEECSL = max(abs(EECSL(2:nobs+1,:)))
-RMSEECSL = sqrt(mean(EECSL(2:nobs+1,:).^2))
+AvgEECSL = mean(mean(EECSL(2:nobs+1,:)));
+MaxAEECSL = max(max(abs(EECSL(2:nobs+1,:))));
+RMSEECSL = sqrt(mean(mean(EECSL(2:nobs+1,:).^2)));
+
+Mom = [AvgEESSL  AvgEECSL  AvgEECSL/AvgEESSL;
+       MaxAEESSL MaxAEECSL MaxAEECSL/MaxAEESSL;
+       RMSEESSL  RMSEECSL  RMSEECSL/RMSEESSL;
+       timeSSL   timeCSL   timeCSL/timeSSL]
+   
+UnBal_Plot1([kSSL(2:nobs+1,:),kCSL(2:nobs+1,:)],...
+            [hSSL(2:nobs+1,:),hCSL(2:nobs+1,:)])
+        
+UnBal_Plot1([EESSL(2:nobs+1,1),EECSL(2:nobs+1,1)],...
+            [EESSL(2:nobs+1,2),EECSL(2:nobs+1,2)])
