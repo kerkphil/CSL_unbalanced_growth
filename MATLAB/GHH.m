@@ -9,7 +9,7 @@ theta = 1.4;
 del = .025;
 g   = .01;
 psi = 2;
-omega = .000000013;
+omega = .013;
 rho = .95;
 
 % set starting values
@@ -22,6 +22,8 @@ nx = 3;
 ny = 0;
 nz = 1;
 nobs = 300;
+burn = 50;
+nsim = 1;
 randomerr = 1;
 logX = 0;
 EE = 1;
@@ -36,45 +38,54 @@ for e = 1:ne
     Eps(e) = norminv(Cum,0,omega);
 end
 
-% generate a history of Z's
-Z = zeros(nobs+2,nz);
-if randomerr
-    eps = randn(nobs+2,1)*omega;
-else
-    load simulationshocks.mat
-    eps = simeps;
-    [nobs,~] = size(simeps)-2;
+Mom = zeros(4,1);
+% begin simulations loop
+for i = 1:nsim
+    % generate a history of Z's
+    Z = zeros(nobs+burn+2,nz);
+    if randomerr
+        eps = randn(nobs+burn+2,1)*omega;
+    else
+        load simulationshocks.mat
+        eps = simeps;
+        [nobs,~] = size(simeps)-2;
+    end
+    for t=1:nobs+burn+1
+        Z(t+1,:) = Z(t,:)*rho + eps(t+1,:);
+    end
+
+    %  current state linarization
+    tic;
+    [XCSL, temp, EulerErr] = LinApp_CSL_Euler(@GHH_dyn,param,X0',Z,...
+        rho,logX,EE,Eps,Phi);
+    k  = XCSL(burn:nobs+burn+2,1);
+    h  = XCSL(burn:nobs+burn+2,2);
+    Y = zeros(nobs+2,1);
+    r  = zeros(nobs+2,1);
+    w  = zeros(nobs+2,1);
+    c = zeros(nobs+2,1);
+    i  = zeros(nobs+2,1);
+
+    for t=2:nobs+1
+        [Y(t+1), r(t+1), w(t+1), c(t+1), i(t+1)] = ...
+         GHH_defs(k(t), h(t), t, Z(t), k(t+1), h(t+1), t+1, param);
+    end
+    Time = toc;
+
+    AvgEE = mean(mean(EulerErr(2:nobs+1,:)));
+    MaxAEE = max(max(abs(EulerErr(2:nobs+1,:))));
+    RMSEE = sqrt(mean(mean(EulerErr(2:nobs+1,:).^2)));
+
+    Mom(1) = ((nsim-1)/nsim)* Mom(1) + (1/nsim)*AvgEE;
+    Mom(2) = max(Mom(2), MaxAEE);
+    Mom(3) = sqrt(((nsim-1)/nsim)* Mom(1)^2 + (1/nsim)*RMSEE); 
+    Mom(4) = Mom(4) + Time;
 end
-for t=1:nobs+1
-    Z(t+1,:) = Z(t,:)*rho + eps(t+1,:);
-end
 
-%  current state linarization
-tic;
-[XCSL, temp, EulerErr] = LinApp_CSL_Euler(@GHH_dyn,param,X0',Z,...
-    rho,logX,EE,Eps,Phi);
-k  = XCSL(:,1);
-h  = XCSL(:,2);
-Y = zeros(nobs+2,1);
-r  = zeros(nobs+2,1);
-w  = zeros(nobs+2,1);
-c = zeros(nobs+2,1);
-i  = zeros(nobs+2,1);
-
-for t=2:nobs+1
-    [Y(t+1), r(t+1), w(t+1), c(t+1), i(t+1)] = ...
-     GHH_defs(k(t), h(t), t, Z(t), k(t+1), h(t+1), t+1, param);
-end
-toc
-
-AvgEE = mean(mean(EulerErr(2:nobs+1,:)));
-MaxAEE = max(max(abs(EulerErr(2:nobs+1,:))));
-RMSEE = sqrt(mean(mean(EulerErr(2:nobs+1,:).^2)));
-
-Mom = [AvgEE; MaxAEE; RMSEE]
+Mom
 
 %  plot capital and hours
-UnBal_Plot1(k(2:nobs+1,:),h(2:nobs+1,:))
+JR_Plot1(k(2:nobs+1,:),h(2:nobs+1,:))
 
 % plot Euler errors for capital and hours 
-UnBal_Plot1(EulerErr(2:nobs+1,1),EulerErr(2:nobs+1,2))
+JR_Plot1(EulerErr(2:nobs+1,1),EulerErr(2:nobs+1,2))

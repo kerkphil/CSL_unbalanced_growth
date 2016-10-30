@@ -1,4 +1,4 @@
-function UnBal_Plot1(Y1, Y2)
+function JR_Plot1(Y1, Y2)
 %CREATEFIGURE(Y1, Y2)
 %  Y1:  vector of y data
 %  Y2:  vector of y data
@@ -28,5 +28,5 @@ hold(subplot2,'on');
 plot(Y2,'Parent',subplot2);
 
 % Create ylabel
-ylabel('Leisure');
+ylabel('Labor');
 
