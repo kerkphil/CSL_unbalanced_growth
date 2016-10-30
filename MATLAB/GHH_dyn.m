@@ -22,12 +22,12 @@ psi   = param(7);
 omega = param(8);
 rho = param(9);
 
-[Y, r, w, c, i, Gam, Del, Pi] = ...
+[Y, r, w, c, i, Gam, Pi] = ...
     GHH_defs(km, hm, taum, z, k, h, tau, param);
-[Yp, rp, wp, cp, ip, Gamp, Delp, Pip] = ...
+[Yp, rp, wp, cp, ip, Gamp, Pip] = ...
     GHH_defs(k, h, tau, zp, kp, hp, taup, param);
 
-out1 = bet*(1+rp-del)*(Gam*Del)/(Gamp*Delp) - 1;
-out2 = Del*w/Pi - 1;
+out1 = bet*(1+rp-del)*Gamp/Gam - 1;
+out2 = w/Pi - 1;
 out3 = tau - taum - 1;
 out = [out1; out2; out3];

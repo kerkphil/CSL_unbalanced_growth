@@ -123,9 +123,11 @@ Mom = [AvgEESSL  AvgEECSL  AvgEECSL/AvgEESSL;
        MaxAEESSL MaxAEECSL MaxAEECSL/MaxAEESSL;
        RMSEESSL  RMSEECSL  RMSEECSL/RMSEESSL;
        timeSSL   timeCSL   timeCSL/timeSSL]
-   
+
+% plot capital and hours
 UnBal_Plot1([kSSL(2:nobs+1,:),kCSL(2:nobs+1,:)],...
             [hSSL(2:nobs+1,:),hCSL(2:nobs+1,:)])
         
+% plot Euler errors for capital and hours        
 UnBal_Plot1([EESSL(2:nobs+1,1),EECSL(2:nobs+1,1)],...
             [EESSL(2:nobs+1,2),EECSL(2:nobs+1,2)])

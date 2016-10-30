@@ -8,12 +8,12 @@ sig = 2.5;
 theta = 1.4;
 del = .025;
 g   = .01;
-psi = 5;
-omega = .013;
+psi = 2;
+omega = .000000013;
 rho = .95;
 
 % set starting values
-X0 = [10; .5; 1];
+X0 = [.01; .025; 1];
 
 % set up parameter vector to pass to DSGE function file
 param = [alf bet sig theta del g psi omega rho];
@@ -21,7 +21,7 @@ param = [alf bet sig theta del g psi omega rho];
 nx = 3;
 ny = 0;
 nz = 1;
-nobs = 1000;
+nobs = 300;
 randomerr = 1;
 logX = 0;
 EE = 1;
@@ -67,9 +67,14 @@ for t=2:nobs+1
 end
 toc
 
-AvgEE = mean(EulerErr(2:nobs+1,:))
-MaxAEE = max(abs(EulerErr(2:nobs+1,:)))
-RMSEE = sqrt(mean(EulerErr(2:nobs+1,:).^2))
+AvgEE = mean(mean(EulerErr(2:nobs+1,:)));
+MaxAEE = max(max(abs(EulerErr(2:nobs+1,:))));
+RMSEE = sqrt(mean(mean(EulerErr(2:nobs+1,:).^2)));
 
-%  plot simulation
-UnBal_Plot1(k(2:nobs+1,:),ell(2:nobs+1,:))
+Mom = [AvgEE; MaxAEE; RMSEE]
+
+%  plot capital and hours
+UnBal_Plot1(k(2:nobs+1,:),h(2:nobs+1,:))
+
+% plot Euler errors for capital and hours 
+UnBal_Plot1(EulerErr(2:nobs+1,1),EulerErr(2:nobs+1,2))

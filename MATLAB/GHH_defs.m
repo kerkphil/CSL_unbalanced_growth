@@ -1,4 +1,4 @@
-function [Y, r, w, c, i, Gam, Del, Pi] = ...
+function [Y, r, w, c, i, Gam, Pi] = ...
     GHH_defs(km, hm, taum, z, k, h, tau, param)
 
 alf = param(1);
@@ -16,6 +16,5 @@ r = alf*Y/km;
 w = (1-alf)*Y/h;
 c = w*h + (1+r-del)*km - k;
 i = k - (1-del)*km;
-Gam = (c - psi*h^theta*c)^(-sig);
-Del = 1 - psi*h^theta;
-Pi = psi*theta*h^(theta-1)*c;
+Gam = (c - psi*h^theta)^(-sig);
+Pi = psi*theta*h^(theta-1);
