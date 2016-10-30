@@ -13,10 +13,11 @@ omega = .013;
 rho = .95;
 
 % set starting values
-X0 = [.01; .025; 1];
+X0 = [.01; .025; 0];
 
 % set up parameter vector to pass to DSGE function file
 param = [alf bet sig theta del g psi omega rho];
+
 % set numerical parameters
 nx = 3;
 ny = 0;
