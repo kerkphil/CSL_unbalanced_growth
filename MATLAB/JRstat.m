@@ -72,8 +72,9 @@ theta0 = [XYbar; XYbar; XYbar; 0; 0];
 [PP, QQ, UU, RR, SS, VVV] = ...
     LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,rho,Zbar);
 %  simulate
-[XSSL, YSSL, EESSL] = LinApp_SSL_Euler(XYbar',Z,XYbar',logX,EE,Eps,Phi,...
-                                      PP,QQ,UU,rho,@JRstat_dyn,param);
+[XSSL, YSSL, EESSL] = LinApp_SSL(XYbar',Z,XYbar',rho,PP,QQ,UU,...
+                                 logX,EE,Eps,Phi,@JRstat_dyn,param);
+
 %  recover specific variables
 kSSL  = XSSL(:,1);
 hSSL  = XSSL(:,2);
@@ -97,7 +98,7 @@ RMSEESSL = sqrt(mean(mean(EESSL(2:nobs+1,:).^2)));
 %  current state linarization
 tic;
 %  simulate
-[XCSL, YCSL, EECSL] = LinApp_CSL_Euler(@JRstat_dyn,param,X0',Z,...
+[XCSL, YCSL, EECSL] = LinApp_CSL(@JRstat_dyn,param,X0',Z,...
     rho,logX,EE,Eps,Phi);
 %  recover specific variables
 kCSL  = XCSL(:,1);

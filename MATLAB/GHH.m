@@ -57,7 +57,7 @@ for i = 1:nsim
 
     %  current state linarization
     tic;
-    [XCSL, temp, EulerErr] = LinApp_CSL_Euler(@GHH_dyn,param,X0',Z,...
+    [XCSL, temp, EulerErr] = LinApp_CSL(@GHH_dyn,param,X0',Z,...
         rho,logX,EE,Eps,Phi);
     k  = XCSL(burn:nobs+burn+2,1);
     h  = XCSL(burn:nobs+burn+2,2);
